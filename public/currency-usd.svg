@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="US Flag">
+  <rect width="64" height="64" rx="8" fill="#ffffff"/>
+  <g fill="#b22234">
+    <rect x="0" y="0" width="64" height="6"/>
+    <rect x="0" y="12" width="64" height="6"/>
+    <rect x="0" y="24" width="64" height="6"/>
+    <rect x="0" y="36" width="64" height="6"/>
+    <rect x="0" y="48" width="64" height="6"/>
+    <rect x="0" y="60" width="64" height="4"/>
+  </g>
+  <rect x="0" y="0" width="28" height="28" fill="#3c3b6e"/>
+  <g fill="#ffffff" transform="translate(4 4)">
+    <circle r="1.2" cx="2" cy="2"/>
+    <circle r="1.2" cx="8" cy="2"/>
+    <circle r="1.2" cx="14" cy="2"/>
+    <circle r="1.2" cx="20" cy="2"/>
+    <circle r="1.2" cx="5" cy="7"/>
+    <circle r="1.2" cx="11" cy="7"/>
+    <circle r="1.2" cx="17" cy="7"/>
+    <circle r="1.2" cx="2" cy="12"/>
+    <circle r="1.2" cx="8" cy="12"/>
+    <circle r="1.2" cx="14" cy="12"/>
+    <circle r="1.2" cx="20" cy="12"/>
+    <circle r="1.2" cx="5" cy="17"/>
+    <circle r="1.2" cx="11" cy="17"/>
+    <circle r="1.2" cx="17" cy="17"/>
+    <circle r="1.2" cx="2" cy="22"/>
+    <circle r="1.2" cx="8" cy="22"/>
+    <circle r="1.2" cx="14" cy="22"/>
+    <circle r="1.2" cx="20" cy="22"/>
+  </g>
+</svg>
