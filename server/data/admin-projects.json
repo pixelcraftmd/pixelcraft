@@ -1,0 +1,13 @@
+[
+  {
+    "id": "b2a4a39c-7443-4035-b893-5de63f881db0",
+    "name": "Test Project",
+    "clientId": "dd14ceee-7669-4aff-8ba8-a6cd33eb85f0",
+    "status": "planning",
+    "description": "",
+    "deadline": "2026-02-10",
+    "budget": 1000,
+    "documents": [],
+    "createdAt": "2026-02-05T13:30:11.053Z"
+  }
+]

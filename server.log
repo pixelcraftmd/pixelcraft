@@ -1,0 +1,6 @@
+
+> PortalPixel@0.0.0 dev:server
+> node server/index.js
+
+API running on http://localhost:8080
+^C^CTerminate batch job (Y/N)? 

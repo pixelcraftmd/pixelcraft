@@ -1,0 +1,29 @@
+﻿const PORTFOLIO_PROJECTS = [
+  {
+    id: 'ecommerce',
+        image: '/portfolio/ecommerce.svg',
+    imageAlt: 'Premium e-commerce storefront and analytics dashboard',
+    badge: 'Featured',
+    categoryKey: 'cat_ecommerce',
+    titleKey: 'project1_title',
+    tags: ['React', 'Node.js', 'PostgreSQL', 'Stripe', 'Elasticsearch', 'AWS'],
+    descKey: 'project1_desc',
+    details: {
+      ru: { problem: 'Клиенту нужен мультибрендовый маркетплейс с высокой конверсией и быстрым поиском.', solution: 'Собрали каталог с фильтрами, персональные витрины брендов, умные рекомендации и checkout в 2 клика.', result: 'Рост конверсии, стабильная обработка 10K+ заказов/мес, ускорение TTFB и LCP.', scope: 'UX/UI, архитектура, интеграции PIM/ERP/3PL, аналитика, CI/CD.' },
+      ro: { problem: 'Clientul avea nevoie de un marketplace multi-brand cu cautare rapida.', solution: 'Am construit vitrine de brand, recomandari si checkout in 2 pasi.', result: 'Crestere conversie si 10K+ comenzi/luna.', scope: 'UX/UI, PIM/ERP/3PL, analytics, CI/CD.' },
+      en: { problem: 'Needed a multi-brand marketplace with fast search and higher conversion.', solution: 'Built brand storefronts, smart recommendations and 2-step checkout.', result: 'Higher conversion and 10K+ orders/month.', scope: 'UX/UI, PIM/ERP/3PL, analytics, CI/CD.' }
+    },
+    link: '#',
+    year: '2025'
+  },
+  {
+    id: 'fintech',
+        image: '/portfolio/fintech.svg',
+    imageAlt: 'Mobile banking app with cards, transfers and analytics',
+    badge: 'Fintech',
+    categoryKey: 'cat_fintech',
+    titleKey: 'project2_title',
+    tags: ['Flutter', 'Kotlin', 'Swift', 'Firebase', 'Biometrics', 'OpenAPI'],
+    descKey: 'project2_desc',
+    details: {
+      ru: { problem: 'Нужно безопасное мобильное банкинг-ядро с быстрыми платежами и KYC.', solution: 'Построили мобильные клиенты, антифрод, push-сценарии и интеграции с платежными провайдерами.', result: '99.9% аптайм, снижение отказов, рост MAU и удержания.', scope: '
