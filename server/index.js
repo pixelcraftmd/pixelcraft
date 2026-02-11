@@ -1,4 +1,4 @@
-﻿﻿import dotenv from 'dotenv';
+﻿﻿﻿﻿﻿﻿﻿import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'node:crypto';
@@ -613,7 +613,7 @@ app.get('/api/client/projects', (req, res) => {
   res.json(projects);
 });
 
-app.post('/api/client/projects', (req, res) => {
+app.post('/api/client/projects', async (req, res) => {
   const {
     name,
     description,
@@ -666,7 +666,7 @@ app.post('/api/client/projects', (req, res) => {
   projects.unshift(project);
   saveAdminProjects(projects);
   logAudit({ action: 'project_create', projectId: project.id, source: 'client' });
-  sendAdminNotification(`New client project: ${project.name}`);
+  await sendAdminNotification(`New client project: ${project.name}`);
 
   res.json(project);
 });
@@ -1085,7 +1085,7 @@ app.post('/api/bpay/create-invoice', async (req, res) => {
   }
 });
 
-app.post('/api/bpay/callback', (req, res) => {
+app.post('/api/bpay/callback', async (req, res) => {
   try {
     const { data, key } = req.body || {};
     if (!data || !key) {
@@ -1108,7 +1108,7 @@ app.post('/api/bpay/callback', (req, res) => {
       });
       if (updated) {
         logAudit({ action: 'invoice_paid', invoiceId: updated.id, provider: 'bpay' });
-        sendAdminNotification(`BPay: invoice ${updated.number} paid.`);
+        await sendAdminNotification(`BPay: invoice ${updated.number} paid.`);
       }
       const updatedSubscription = markSubscriptionPaid(orderId, 'bpay');
       if (updatedSubscription) {
@@ -1212,7 +1212,7 @@ app.post('/api/paypal/capture-order', async (req, res) => {
       const updated = updateInvoiceByOrderId(customId, { status: 'paid', paidAt: new Date().toISOString() });
       if (updated) {
         logAudit({ action: 'invoice_paid', invoiceId: updated.id, provider: 'paypal' });
-        sendAdminNotification(`PayPal: invoice ${updated.number} paid.`);
+        await sendAdminNotification(`PayPal: invoice ${updated.number} paid.`);
       }
       const updatedSubscription = markSubscriptionPaid(customId, 'paypal');
       if (updatedSubscription) {
