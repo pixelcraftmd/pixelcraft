@@ -831,12 +831,6 @@
             overflow: hidden;
         }
 
-        .chat-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             nav {
@@ -944,21 +938,6 @@
             overflow: hidden;
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
             border: 1px solid rgba(99, 102, 241, 0.3);
-        }
-
-        .about-image-inner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 5rem;
         }
 
         /* Portfolio Section */
@@ -1929,6 +1908,46 @@
     <h2 class="section-title" data-translate="portfolio_title">Наши проекты</h2>
     <p class="section-subtitle" data-translate="portfolio_subtitle">Примеры реализованных решений</p>
 
+    <template id="portfolio-card-template">
+        <div class="portfolio-card">
+            <div class="portfolio-image">
+                <img src="" alt="">
+                <span class="portfolio-badge"></span>
+            </div>
+            <div class="portfolio-content">
+                <button class="portfolio-toggle" type="button"></button>
+                <div class="portfolio-header">
+                    <div class="portfolio-category"></div>
+                    <h3></h3>
+                </div>
+                <div class="portfolio-tags">
+                    <span class="portfolio-tag"></span>
+                </div>
+                <p></p>
+                <div class="portfolio-stats">
+                    <div class="portfolio-stat">
+                        <span class="portfolio-stat-value"></span>
+                        <span class="portfolio-stat-label"></span>
+                    </div>
+                </div>
+                <div class="portfolio-details" hidden>
+                    <div class="portfolio-details-media">
+                        <img src="" alt="">
+                    </div>
+                    <div class="portfolio-details-text">
+                        <div class="detail-row">
+                            <span class="detail-label"></span>
+                            <span class="detail-text"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="portfolio-footer">
+                    <a class="portfolio-link" href="#"></a>
+                    <span class="portfolio-year"></span>
+                </div>
+            </div>
+        </div>
+    </template>
     <div id="portfolio-grid" class="portfolio-grid"></div>
 </section>
 
@@ -2149,7 +2168,6 @@
             stat_rating: 'Рейтинг',
             stat_uptime: 'Uptime',
             stat_conversion: 'Конверсия',
-            stat_clients: 'Клиентов',
             stat_roi: 'ROI',
             stat_faster: 'Быстрее',
             stat_accuracy: 'Точность',
@@ -2317,7 +2335,6 @@
             stat_rating: 'Rating',
             stat_uptime: 'Uptime',
             stat_conversion: 'Conversie',
-            stat_clients: 'Clienți',
             stat_roi: 'ROI',
             stat_faster: 'Mai rapid',
             stat_accuracy: 'Acuratețe',
@@ -2470,7 +2487,6 @@
             stat_rating: 'Rating',
             stat_uptime: 'Uptime',
             stat_conversion: 'Conversion',
-            stat_clients: 'Clients',
             stat_roi: 'ROI',
             stat_faster: 'Faster',
             stat_accuracy: 'Accuracy',
