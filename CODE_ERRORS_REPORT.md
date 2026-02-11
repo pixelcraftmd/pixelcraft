@@ -28,7 +28,7 @@ The following critical issues have been identified and fixed:
 ### 3. **LanguageSwitcher.tsx - Incorrect className prop (Line 58)**
 **Severity:** High
 **Issue:** In AdminLogin.tsx, `LanguageSwitcher` is passed a `className` prop that should be a string
-```typescript
+```tsx
 // Current (AdminLogin.tsx, line 57):
 <LanguageSwitcher className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800" />
 ```
