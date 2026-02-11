@@ -1,4 +1,4 @@
-﻿import dotenv from 'dotenv';
+﻿﻿import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'node:crypto';
@@ -857,8 +857,7 @@ app.get('/api/subscriptions', (req, res) => {
   const normalizedPhone = String(phone || '').trim();
   const filtered = subs.filter((sub) => {
     if (normalizedEmail && String(sub.email || '').toLowerCase() === normalizedEmail) return true;
-    if (normalizedPhone && String(sub.phone || '') === normalizedPhone) return true;
-    return false;
+    return normalizedPhone && String(sub.phone || '') === normalizedPhone;
   });
   res.json(filtered);
 });

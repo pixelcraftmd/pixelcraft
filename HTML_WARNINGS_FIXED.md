@@ -20,6 +20,7 @@ All HTML warnings have been fixed or analyzed. Total: 68 warnings.
 ```javascript
 formBtn.addEventListener('click', function(e) {
 ```
+
 **Fixed:**
 ```javascript
 formBtn.addEventListener('click', function() {

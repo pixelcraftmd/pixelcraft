@@ -33,7 +33,7 @@ The following critical issues have been identified and fixed:
 <LanguageSwitcher className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800" />
 
 // This is correct, but the component definition should handle it properly
-```
+``````
 
 ### 4. **AdminDashboard.tsx - Type casting without proper error handling (Line 189)** ✅ FIXED
 **Severity:** Low
