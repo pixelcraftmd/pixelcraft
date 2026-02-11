@@ -314,7 +314,7 @@ const markSubscriptionPaid = (orderId, provider, paidAt = new Date().toISOString
 
 const formatProjectStatusMessage = (projects) => {
   if (!projects.length) {
-    return '\u0421\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0440\u043e\u0435\u043a\u0442\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u044b.';
+    return 'Статусы проектов пока не найдены.';
   }
   return projects
     .map(
@@ -342,7 +342,6 @@ const getBpayConfig = () => {
     currency: process.env.BPAY_CURRENCY || 'MDL'
   };
 };
-
 
 const buildBpayRequestKey = (data, secretKey) =>
   crypto.createHash('sha256').update(`${data}${secretKey}`).digest('hex');
@@ -438,7 +437,6 @@ const normalizeBpayCurrency = (value) => {
   const key = String(value || '').trim().toUpperCase();
   return map[key] || 498;
 };
-
 
 const formatBnmDate = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
@@ -966,7 +964,7 @@ app.post('/api/telegram/webhook', async (req, res) => {
 
       const statuses = getProjectStatuses();
       const projects = Object.values(statuses).filter((item) => item.phone === phone);
-      const reply = `\u0422\u0435\u043b\u0435\u0444\u043e\u043d ${phone} \u043f\u0440\u0438\u0432\u044f\u0437\u0430\u043d.\n\n${formatProjectStatusMessage(projects)}`;
+      const reply = `Телефон ${phone} привязан.\n\n${formatProjectStatusMessage(projects)}`;
       await sendTelegramMessage(chatId, reply);
       return res.json({ ok: true });
     }
@@ -975,7 +973,7 @@ app.post('/api/telegram/webhook', async (req, res) => {
       if (text.startsWith('/start')) {
         await sendTelegramMessage(
           chatId,
-          '\u0427\u0442\u043e\u0431\u044b \u043f\u043e\u043b\u0443\u0447\u0430\u0442\u044c \u0441\u0442\u0430\u0442\u0443\u0441 \u043f\u0440\u043e\u0435\u043a\u0442\u0430, \u043e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u043a\u043e\u043d\u0442\u0430\u043a\u0442 \u0447\u0435\u0440\u0435\u0437 \u043a\u043d\u043e\u043f\u043a\u0443 \u00ab\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u044c\u0441\u044f \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u043e\u043c\u00bb.'
+          'Чтобы получать статус проекта, отправьте контакт через кнопку «Поделиться контактом».'
         );
         return res.json({ ok: true });
       }
@@ -985,7 +983,7 @@ app.post('/api/telegram/webhook', async (req, res) => {
         if (!phone || phone.length < 6) {
           await sendTelegramMessage(
             chatId,
-            '\u041e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u043d\u043e\u043c\u0435\u0440 \u0432 \u0444\u043e\u0440\u043c\u0430\u0442\u0435 /phone +373XXXXXXXX'
+            'Отправьте номер в формате /phone +373XXXXXXXX'
           );
           return res.json({ ok: true });
         }
@@ -999,7 +997,7 @@ app.post('/api/telegram/webhook', async (req, res) => {
         saveTelegramMap(telegramMap);
         const statuses = getProjectStatuses();
         const projects = Object.values(statuses).filter((item) => item.phone === phone);
-        const reply = `\u0422\u0435\u043b\u0435\u0444\u043e\u043d ${phone} \u043f\u0440\u0438\u0432\u044f\u0437\u0430\u043d.\n\n${formatProjectStatusMessage(projects)}`;
+        const reply = `Телефон ${phone} привязан.\n\n${formatProjectStatusMessage(projects)}`;
         await sendTelegramMessage(chatId, reply);
         return res.json({ ok: true });
       }
@@ -1009,7 +1007,7 @@ app.post('/api/telegram/webhook', async (req, res) => {
         if (!phoneEntry) {
           await sendTelegramMessage(
             chatId,
-            '\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043e\u0442\u043f\u0440\u0430\u0432\u044c\u0442\u0435 \u043a\u043e\u043d\u0442\u0430\u043a\u0442 \u0447\u0435\u0440\u0435\u0437 \u043a\u043d\u043e\u043f\u043a\u0443 \u00ab\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u044c\u0441\u044f \u043a\u043e\u043d\u0442\u0430\u043a\u0442\u043e\u043c\u00bb.'
+            'Сначала отправьте контакт через кнопку «Поделиться контактом».'
           );
           return res.json({ ok: true });
         }
@@ -1056,7 +1054,7 @@ app.post('/api/projects/status', requireAdmin, async (req, res) => {
   const telegramMap = getTelegramMap();
   const chatEntry = telegramMap[normalizedPhone];
   if (chatEntry?.chatId) {
-    const message = `\u0421\u0442\u0430\u0442\u0443\u0441 \u043f\u0440\u043e\u0435\u043a\u0442\u0430 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d:\n\u2022 ${statuses[id].name}: ${statuses[id].status}`;
+    const message = `Статус проекта обновлен:\n• ${statuses[id].name}: ${statuses[id].status}`;
     await sendTelegramMessage(chatEntry.chatId, message);
   }
 
@@ -1229,5 +1227,3 @@ app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`API running on http://localhost:${port}`);
 });
-
-
