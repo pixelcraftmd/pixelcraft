@@ -18,12 +18,12 @@ All HTML warnings have been fixed or analyzed. Total: 68 warnings.
 **Status:** FIXED ✅
 **Original:**
 ```javascript
-formBtn.addEventListener('click', function(e) {
+formBtn.addEventListener('click', function(e) {});
 ```
 
 **Fixed:**
 ```javascript
-formBtn.addEventListener('click', function() {
+formBtn.addEventListener('click', function() {});
 ```
 - Removed unused parameter 'e' from click handler
 
