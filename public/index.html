@@ -355,6 +355,176 @@
             font-size: 1.05rem;
         }
 
+        /* Pricing Section */
+        .pricing {
+            padding: 8rem 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .pricing-group {
+            margin-top: 3.5rem;
+        }
+
+        .pricing-group:first-of-type {
+            margin-top: 2rem;
+        }
+
+        .pricing-tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .pricing-tab {
+            padding: 0.6rem 1.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            background: rgba(99, 102, 241, 0.12);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .pricing-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: transparent;
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.35);
+        }
+
+        .pricing-group.is-hidden {
+            display: none;
+        }
+
+        .pricing-group-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(99, 102, 241, 0.08));
+            border: 1px solid rgba(236, 72, 153, 0.25);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .pricing-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 18px 45px rgba(236, 72, 153, 0.2);
+        }
+
+        .pricing-card:hover::after {
+            opacity: 1;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(236, 72, 153, 0.15);
+            color: rgba(236, 72, 153, 0.95);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-price {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0.8rem 0 0.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-subprice {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-card p {
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-list {
+            list-style: none;
+            margin-top: 1.5rem;
+            display: grid;
+            gap: 0.6rem;
+            color: rgba(255, 255, 255, 0.75);
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-list li::before {
+            content: '•';
+            color: var(--accent);
+            margin-right: 0.6rem;
+        }
+
+        .pricing-cta {
+            margin-top: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 1.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(236, 72, 153, 0.5);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            background: rgba(236, 72, 153, 0.15);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-cta:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 24px rgba(236, 72, 153, 0.25);
+        }
+
         /* Stats Section */
         .stats {
             padding: 6rem 5%;
@@ -1090,6 +1260,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
             .telegram-float {
             pointer-events: auto;
             z-index: 3000;
@@ -1337,6 +1511,10 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
             .stats-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
@@ -1353,6 +1531,7 @@
     <ul class="nav-links">
         <li><a href="#about" data-translate="nav_about">О нас</a></li>
         <li><a href="#services" data-translate="nav_services">Услуги</a></li>
+        <li><a href="#pricing" data-translate="nav_pricing">Цены</a></li>
         <li><a href="#portfolio" data-translate="nav_portfolio">Портфолио</a></li>
         <li><a href="#contact" data-translate="nav_contact">Контакты</a></li>
         <li>
@@ -1641,6 +1820,111 @@
     </div>
 </section>
 
+<section class="pricing" id="pricing">
+    <h2 class="section-title" data-translate="pricing_title">Прозрачные цены</h2>
+    <p class="section-subtitle" data-translate="pricing_subtitle">Выберите подходящий вариант сотрудничества</p>
+    <div class="pricing-tabs">
+        <button class="pricing-tab active" type="button" data-pricing-tab="project" data-translate="pricing_group_project">
+            Проектная работа
+        </button>
+        <button class="pricing-tab" type="button" data-pricing-tab="retainer" data-translate="pricing_group_retainer">
+            Абонентское обслуживание
+        </button>
+    </div>
+
+    <div class="pricing-group" data-pricing-group="project">
+        <h3 class="pricing-group-title" data-translate="pricing_group_project">Проектная работа</h3>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_hit">Хит продаж</span>
+                <h3 data-translate="pricing_project_title">Чат-бот для бизнеса</h3>
+                <div class="pricing-price" data-translate="pricing_project_price">5,000-9,000 MDL</div>
+                <div class="pricing-subprice" data-translate="pricing_project_price_usd">($275-500)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_project_item1">Прием заказов через Telegram</li>
+                    <li data-translate="pricing_project_item2">Автоматические уведомления</li>
+                    <li data-translate="pricing_project_item3">Интеграция с вашей системой</li>
+                    <li data-translate="pricing_project_item4">Поддержка 30 дней</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_project_cta">Заказать</a>
+            </div>
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_fast">Быстрый старт</span>
+                <h3 data-translate="pricing_landing_title">Лендинг под ключ</h3>
+                <div class="pricing-price" data-translate="pricing_landing_price">3,000-6,000 MDL</div>
+                <div class="pricing-subprice" data-translate="pricing_landing_price_usd">($165-330)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_landing_item1">Современный дизайн</li>
+                    <li data-translate="pricing_landing_item2">Адаптивная верстка</li>
+                    <li data-translate="pricing_landing_item3">SEO-оптимизация</li>
+                    <li data-translate="pricing_landing_item4">Настройка форм и аналитики</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_landing_cta">Заказать</a>
+            </div>
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_business">Для бизнеса</span>
+                <h3 data-translate="pricing_api_title">Интеграция API</h3>
+                <div class="pricing-price" data-translate="pricing_api_price">2,000-5,000 MDL</div>
+                <div class="pricing-subprice" data-translate="pricing_api_price_usd">($110-275)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_api_item1">Подключение платежных систем</li>
+                    <li data-translate="pricing_api_item2">Интеграция CRM</li>
+                    <li data-translate="pricing_api_item3">Автоматизация процессов</li>
+                    <li data-translate="pricing_api_item4">Техническая документация</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_api_cta">Заказать</a>
+            </div>
+        </div>
+    </div>
+    <div class="pricing-group is-hidden" data-pricing-group="retainer">
+        <h3 class="pricing-group-title" data-translate="pricing_group_retainer">Абонентское обслуживание</h3>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_retainer_badge_basic">Для стартапов</span>
+                <h3 data-translate="pricing_retainer_basic_title">Basic</h3>
+                <div class="pricing-price" data-translate="pricing_retainer_basic_hours">До 5 часов</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_basic_price">1,500 MDL/мес</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_basic_price_usd">($82/мес)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_retainer_basic_item1">Поддержка сайта</li>
+                    <li data-translate="pricing_retainer_basic_item2">Исправление ошибок</li>
+                    <li data-translate="pricing_retainer_basic_item3">Мелкие правки</li>
+                    <li data-translate="pricing_retainer_basic_item4">Email поддержка</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_retainer_basic_cta">Заказать</a>
+            </div>
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_retainer_badge_pro">Популярный</span>
+                <h3 data-translate="pricing_retainer_pro_title">Pro</h3>
+                <div class="pricing-price" data-translate="pricing_retainer_pro_hours">До 15 часов</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_pro_price">4,000 MDL/мес</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_pro_price_usd">($220/мес)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_retainer_pro_item1">Все из Basic</li>
+                    <li data-translate="pricing_retainer_pro_item2">Развитие функционала</li>
+                    <li data-translate="pricing_retainer_pro_item3">Новые фичи</li>
+                    <li data-translate="pricing_retainer_pro_item4">Приоритетная поддержка</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_retainer_pro_cta">Заказать</a>
+            </div>
+            <div class="pricing-card">
+                <span class="pricing-badge" data-translate="pricing_retainer_badge_enterprise">Для крупного бизнеса</span>
+                <h3 data-translate="pricing_retainer_enterprise_title">Enterprise</h3>
+                <div class="pricing-price" data-translate="pricing_retainer_enterprise_hours">Безлимит</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_enterprise_price">8,000 MDL/мес</div>
+                <div class="pricing-subprice" data-translate="pricing_retainer_enterprise_price_usd">($440/мес)</div>
+                <ul class="pricing-list">
+                    <li data-translate="pricing_retainer_enterprise_item1">Все из Pro</li>
+                    <li data-translate="pricing_retainer_enterprise_item2">Выделенный разработчик</li>
+                    <li data-translate="pricing_retainer_enterprise_item3">Консультации по развитию</li>
+                    <li data-translate="pricing_retainer_enterprise_item4">Поддержка 24/7</li>
+                </ul>
+                <a class="pricing-cta" href="#contact" data-translate="pricing_retainer_enterprise_cta">Заказать</a>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="portfolio" id="portfolio">
     <h2 class="section-title" data-translate="portfolio_title">Наши проекты</h2>
     <p class="section-subtitle" data-translate="portfolio_subtitle">Примеры реализованных решений</p>
@@ -1740,6 +2024,7 @@
         ru: {
             nav_about: 'О нас',
             nav_services: 'Услуги',
+            nav_pricing: 'Цены',
             nav_portfolio: 'Портфолио',
             nav_contact: 'Контакты',
             nav_dashboard: 'Личный кабинет',
@@ -1760,6 +2045,67 @@
             feature4: 'Рост бизнеса',
             services_title: 'Наши услуги',
             services_subtitle: 'Полный цикл разработки от идеи до запуска',
+            pricing_title: 'Прозрачные цены',
+            pricing_subtitle: 'Выберите подходящий вариант сотрудничества',
+            pricing_hit: 'Хит продаж',
+            pricing_group_project: 'Проектная работа',
+            pricing_group_retainer: 'Абонентское обслуживание',
+            pricing_project_title: 'Чат-бот для бизнеса',
+            pricing_project_price: '5,000-9,000 MDL',
+            pricing_project_price_usd: '($275-500)',
+            pricing_project_item1: 'Прием заказов через Telegram',
+            pricing_project_item2: 'Автоматические уведомления',
+            pricing_project_item3: 'Интеграция с вашей системой',
+            pricing_project_item4: 'Поддержка 30 дней',
+            pricing_project_cta: 'Заказать',
+            pricing_fast: 'Быстрый старт',
+            pricing_landing_title: 'Лендинг под ключ',
+            pricing_landing_price: '3,000-6,000 MDL',
+            pricing_landing_price_usd: '($165-330)',
+            pricing_landing_item1: 'Современный дизайн',
+            pricing_landing_item2: 'Адаптивная верстка',
+            pricing_landing_item3: 'SEO-оптимизация',
+            pricing_landing_item4: 'Настройка форм и аналитики',
+            pricing_landing_cta: 'Заказать',
+            pricing_business: 'Для бизнеса',
+            pricing_api_title: 'Интеграция API',
+            pricing_api_price: '2,000-5,000 MDL',
+            pricing_api_price_usd: '($110-275)',
+            pricing_api_item1: 'Подключение платежных систем',
+            pricing_api_item2: 'Интеграция CRM',
+            pricing_api_item3: 'Автоматизация процессов',
+            pricing_api_item4: 'Техническая документация',
+            pricing_api_cta: 'Заказать',
+            pricing_retainer_badge_basic: 'Для стартапов',
+            pricing_retainer_basic_title: 'Basic',
+            pricing_retainer_basic_hours: 'До 5 часов',
+            pricing_retainer_basic_price: '1,500 MDL/мес',
+            pricing_retainer_basic_price_usd: '($82/мес)',
+            pricing_retainer_basic_item1: 'Поддержка сайта',
+            pricing_retainer_basic_item2: 'Исправление ошибок',
+            pricing_retainer_basic_item3: 'Мелкие правки',
+            pricing_retainer_basic_item4: 'Email поддержка',
+            pricing_retainer_basic_cta: 'Заказать',
+            pricing_retainer_badge_pro: 'Популярный',
+            pricing_retainer_pro_title: 'Pro',
+            pricing_retainer_pro_hours: 'До 15 часов',
+            pricing_retainer_pro_price: '4,000 MDL/мес',
+            pricing_retainer_pro_price_usd: '($220/мес)',
+            pricing_retainer_pro_item1: 'Все из Basic',
+            pricing_retainer_pro_item2: 'Развитие функционала',
+            pricing_retainer_pro_item3: 'Новые фичи',
+            pricing_retainer_pro_item4: 'Приоритетная поддержка',
+            pricing_retainer_pro_cta: 'Заказать',
+            pricing_retainer_badge_enterprise: 'Для крупного бизнеса',
+            pricing_retainer_enterprise_title: 'Enterprise',
+            pricing_retainer_enterprise_hours: 'Безлимит',
+            pricing_retainer_enterprise_price: '8,000 MDL/мес',
+            pricing_retainer_enterprise_price_usd: '($440/мес)',
+            pricing_retainer_enterprise_item1: 'Все из Pro',
+            pricing_retainer_enterprise_item2: 'Выделенный разработчик',
+            pricing_retainer_enterprise_item3: 'Консультации по развитию',
+            pricing_retainer_enterprise_item4: 'Поддержка 24/7',
+            pricing_retainer_enterprise_cta: 'Заказать',
             service1_title: 'Веб-приложения',
             service1_desc: 'Создаём SaaS-платформы, CRM-системы, панели управления и маркетплейсы. Используем React, Vue.js, Angular, Node.js, Python. Полный цикл от прототипа до масштабирования.',
             service2_title: 'Корпоративные порталы',
@@ -1884,6 +2230,7 @@
         ro: {
             nav_about: 'Despre noi',
             nav_services: 'Servicii',
+            nav_pricing: 'Prețuri',
             nav_portfolio: 'Portofoliu',
             nav_contact: 'Contacte',
             nav_dashboard: 'Cabinet Personal',
@@ -1904,6 +2251,67 @@
             feature4: 'Creștere business',
             services_title: 'Serviciile noastre',
             services_subtitle: 'Ciclu complet de dezvoltare de la idee până la lansare',
+            pricing_title: 'Prețuri transparente',
+            pricing_subtitle: 'Alegeți varianta potrivită de colaborare',
+            pricing_hit: 'Cel mai vandut',
+            pricing_group_project: 'Lucru pe proiect',
+            pricing_group_retainer: 'Abonament lunar',
+            pricing_project_title: 'Chatbot pentru business',
+            pricing_project_price: '5,000-9,000 MDL',
+            pricing_project_price_usd: '($275-500)',
+            pricing_project_item1: 'Preluare comenzi prin Telegram',
+            pricing_project_item2: 'Notificari automate',
+            pricing_project_item3: 'Integrare cu sistemul tau',
+            pricing_project_item4: 'Suport 30 zile',
+            pricing_project_cta: 'Comanda',
+            pricing_fast: 'Start rapid',
+            pricing_landing_title: 'Landing page la cheie',
+            pricing_landing_price: '3,000-6,000 MDL',
+            pricing_landing_price_usd: '($165-330)',
+            pricing_landing_item1: 'Design modern',
+            pricing_landing_item2: 'Layout adaptiv',
+            pricing_landing_item3: 'Optimizare SEO',
+            pricing_landing_item4: 'Configurare formulare si analytics',
+            pricing_landing_cta: 'Comanda',
+            pricing_business: 'Pentru business',
+            pricing_api_title: 'Integrare API',
+            pricing_api_price: '2,000-5,000 MDL',
+            pricing_api_price_usd: '($110-275)',
+            pricing_api_item1: 'Conectare sisteme de plata',
+            pricing_api_item2: 'Integrare CRM',
+            pricing_api_item3: 'Automatizare procese',
+            pricing_api_item4: 'Documentatie tehnica',
+            pricing_api_cta: 'Comanda',
+            pricing_retainer_badge_basic: 'Pentru startup',
+            pricing_retainer_basic_title: 'Basic',
+            pricing_retainer_basic_hours: 'Pina la 5 ore',
+            pricing_retainer_basic_price: '1,500 MDL/luna',
+            pricing_retainer_basic_price_usd: '($82/luna)',
+            pricing_retainer_basic_item1: 'Suport site',
+            pricing_retainer_basic_item2: 'Corectare erori',
+            pricing_retainer_basic_item3: 'Modificari mici',
+            pricing_retainer_basic_item4: 'Suport email',
+            pricing_retainer_basic_cta: 'Comanda',
+            pricing_retainer_badge_pro: 'Popular',
+            pricing_retainer_pro_title: 'Pro',
+            pricing_retainer_pro_hours: 'Pina la 15 ore',
+            pricing_retainer_pro_price: '4,000 MDL/luna',
+            pricing_retainer_pro_price_usd: '($220/luna)',
+            pricing_retainer_pro_item1: 'Tot din Basic',
+            pricing_retainer_pro_item2: 'Dezvoltare functionalitati',
+            pricing_retainer_pro_item3: 'Functionalitati noi',
+            pricing_retainer_pro_item4: 'Suport prioritar',
+            pricing_retainer_pro_cta: 'Comanda',
+            pricing_retainer_badge_enterprise: 'Pentru business mare',
+            pricing_retainer_enterprise_title: 'Enterprise',
+            pricing_retainer_enterprise_hours: 'Nelimitat',
+            pricing_retainer_enterprise_price: '8,000 MDL/luna',
+            pricing_retainer_enterprise_price_usd: '($440/luna)',
+            pricing_retainer_enterprise_item1: 'Tot din Pro',
+            pricing_retainer_enterprise_item2: 'Dezvoltator dedicat',
+            pricing_retainer_enterprise_item3: 'Consultanta dezvoltare',
+            pricing_retainer_enterprise_item4: 'Suport 24/7',
+            pricing_retainer_enterprise_cta: 'Comanda',
             service1_title: 'Aplicații Web',
             service1_desc: 'Creăm platforme SaaS, sisteme CRM, panouri de control și marketplace-uri. Folosim React, Vue.js, Angular, Node.js, Python. Ciclu complet de la prototip la scalare.',
             service2_title: 'Portaluri Corporative',
@@ -2002,6 +2410,7 @@
         en: {
             nav_about: 'About',
             nav_services: 'Services',
+            nav_pricing: 'Pricing',
             nav_portfolio: 'Portfolio',
             nav_contact: 'Contact',
             nav_dashboard: 'Dashboard',
@@ -2022,6 +2431,67 @@
             feature4: 'Business growth',
             services_title: 'Our Services',
             services_subtitle: 'Full development cycle from idea to launch',
+            pricing_title: 'Transparent pricing',
+            pricing_subtitle: 'Choose the collaboration model that fits you',
+            pricing_hit: 'Best seller',
+            pricing_group_project: 'Project-based work',
+            pricing_group_retainer: 'Monthly retainer',
+            pricing_project_title: 'Business chatbot',
+            pricing_project_price: '5,000-9,000 MDL',
+            pricing_project_price_usd: '($275-500)',
+            pricing_project_item1: 'Order intake via Telegram',
+            pricing_project_item2: 'Automated notifications',
+            pricing_project_item3: 'Integration with your system',
+            pricing_project_item4: '30 days support',
+            pricing_project_cta: 'Order',
+            pricing_fast: 'Quick start',
+            pricing_landing_title: 'Turnkey landing page',
+            pricing_landing_price: '3,000-6,000 MDL',
+            pricing_landing_price_usd: '($165-330)',
+            pricing_landing_item1: 'Modern design',
+            pricing_landing_item2: 'Responsive layout',
+            pricing_landing_item3: 'SEO optimization',
+            pricing_landing_item4: 'Forms and analytics setup',
+            pricing_landing_cta: 'Order',
+            pricing_business: 'For business',
+            pricing_api_title: 'API integration',
+            pricing_api_price: '2,000-5,000 MDL',
+            pricing_api_price_usd: '($110-275)',
+            pricing_api_item1: 'Payment system integration',
+            pricing_api_item2: 'CRM integration',
+            pricing_api_item3: 'Process automation',
+            pricing_api_item4: 'Technical documentation',
+            pricing_api_cta: 'Order',
+            pricing_retainer_badge_basic: 'For startups',
+            pricing_retainer_basic_title: 'Basic',
+            pricing_retainer_basic_hours: 'Up to 5 hours',
+            pricing_retainer_basic_price: '1,500 MDL/mo',
+            pricing_retainer_basic_price_usd: '($82/mo)',
+            pricing_retainer_basic_item1: 'Website support',
+            pricing_retainer_basic_item2: 'Bug fixes',
+            pricing_retainer_basic_item3: 'Small edits',
+            pricing_retainer_basic_item4: 'Email support',
+            pricing_retainer_basic_cta: 'Order',
+            pricing_retainer_badge_pro: 'Popular',
+            pricing_retainer_pro_title: 'Pro',
+            pricing_retainer_pro_hours: 'Up to 15 hours',
+            pricing_retainer_pro_price: '4,000 MDL/mo',
+            pricing_retainer_pro_price_usd: '($220/mo)',
+            pricing_retainer_pro_item1: 'Everything in Basic',
+            pricing_retainer_pro_item2: 'Feature development',
+            pricing_retainer_pro_item3: 'New features',
+            pricing_retainer_pro_item4: 'Priority support',
+            pricing_retainer_pro_cta: 'Order',
+            pricing_retainer_badge_enterprise: 'For enterprise',
+            pricing_retainer_enterprise_title: 'Enterprise',
+            pricing_retainer_enterprise_hours: 'Unlimited',
+            pricing_retainer_enterprise_price: '8,000 MDL/mo',
+            pricing_retainer_enterprise_price_usd: '($440/mo)',
+            pricing_retainer_enterprise_item1: 'Everything in Pro',
+            pricing_retainer_enterprise_item2: 'Dedicated developer',
+            pricing_retainer_enterprise_item3: 'Growth consulting',
+            pricing_retainer_enterprise_item4: '24/7 support',
+            pricing_retainer_enterprise_cta: 'Order',
             service1_title: 'Web Applications',
             service1_desc: 'We create SaaS platforms, CRM systems, control panels and marketplaces. We use React, Vue.js, Angular, Node.js, Python. Full cycle from prototype to scaling.',
             service2_title: 'Corporate Portals',
@@ -2407,11 +2877,23 @@
     }, observerOptions);
 
     // Наблюдаем за статичными элементами
-    document.querySelectorAll('.service-card, .stat-item').forEach(el => {
+    document.querySelectorAll('.service-card, .pricing-card, .stat-item').forEach(el => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
         el.style.transition = 'opacity 0.8s, transform 0.8s';
         observer.observe(el);
+    });
+
+    const pricingTabs = document.querySelectorAll('.pricing-tab');
+    const pricingGroups = document.querySelectorAll('[data-pricing-group]');
+    pricingTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-pricing-tab');
+            pricingTabs.forEach(btn => btn.classList.toggle('active', btn === tab));
+            pricingGroups.forEach(group => {
+                group.classList.toggle('is-hidden', group.getAttribute('data-pricing-group') !== target);
+            });
+        });
     });
 
     // Наблюдаем за элементами портфолио после их рендеринга
@@ -2439,6 +2921,7 @@
 <script src="portfolio.js"></script>
 </body>
 </html>
+
 
 
 

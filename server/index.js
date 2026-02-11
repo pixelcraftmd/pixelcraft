@@ -1,4 +1,4 @@
-﻿import dotenv from 'dotenv';
+﻿﻿import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'node:crypto';
@@ -37,6 +37,7 @@ const ADMIN_SESSIONS_FILE = path.join(DATA_DIR, 'admin-sessions.json');
 const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json');
 const ADMIN_PROJECTS_FILE = path.join(DATA_DIR, 'admin-projects.json');
 const INVOICES_FILE = path.join(DATA_DIR, 'invoices.json');
+const SUBSCRIPTIONS_FILE = path.join(DATA_DIR, 'subscriptions.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'admin-settings.json');
 const AUDIT_FILE = path.join(DATA_DIR, 'audit-log.json');
 
@@ -118,6 +119,8 @@ const saveAdminProjects = (data) => writeJson(ADMIN_PROJECTS_FILE, data);
 
 const getInvoices = () => readJson(INVOICES_FILE, []);
 const saveInvoices = (data) => writeJson(INVOICES_FILE, data);
+const getSubscriptions = () => readJson(SUBSCRIPTIONS_FILE, []);
+const saveSubscriptions = (data) => writeJson(SUBSCRIPTIONS_FILE, data);
 
 const getAdminSettings = () =>
   readJson(SETTINGS_FILE, {
@@ -242,6 +245,73 @@ const updateInvoiceByOrderId = (orderId, patch = {}) => {
   return updated;
 };
 
+const updateSubscriptionByOrderId = (orderId, patch = {}) => {
+  if (!orderId) return null;
+  const subs = getSubscriptions();
+  const idx = subs.findIndex((sub) => String(sub.orderId) === String(orderId));
+  if (idx === -1) return null;
+  const updated = { ...subs[idx], ...patch };
+  subs[idx] = updated;
+  saveSubscriptions(subs);
+  return updated;
+};
+
+const SUBSCRIPTION_PLANS = {
+  basic: { amount: 1500, title: 'Basic', durationDays: 30 },
+  pro: { amount: 4000, title: 'Pro', durationDays: 30 },
+  enterprise: { amount: 8000, title: 'Enterprise', durationDays: 30 }
+};
+
+const createSubscriptionRecord = ({ planId, email, phone, provider }) => {
+  const plan = SUBSCRIPTION_PLANS[planId];
+  if (!plan) return null;
+  const now = new Date().toISOString();
+  const subscription = {
+    id: crypto.randomUUID(),
+    planId,
+    orderId: `SUB-${crypto.randomUUID()}`,
+    status: 'pending',
+    amountMDL: plan.amount,
+    title: plan.title,
+    provider: provider || null,
+    email: email || null,
+    phone: phone || null,
+    createdAt: now,
+    updatedAt: now,
+    activeUntil: null
+  };
+  const subs = getSubscriptions();
+  subs.unshift(subscription);
+  saveSubscriptions(subs);
+  return subscription;
+};
+
+const extendSubscription = (currentUntil, durationDays) => {
+  const now = new Date();
+  const base = currentUntil && new Date(currentUntil) > now ? new Date(currentUntil) : now;
+  base.setDate(base.getDate() + durationDays);
+  return base.toISOString();
+};
+
+const markSubscriptionPaid = (orderId, provider, paidAt = new Date().toISOString()) => {
+  const subs = getSubscriptions();
+  const idx = subs.findIndex((sub) => String(sub.orderId) === String(orderId));
+  if (idx === -1) return null;
+  const plan = SUBSCRIPTION_PLANS[subs[idx].planId];
+  const activeUntil = extendSubscription(subs[idx].activeUntil, plan?.durationDays || 30);
+  const updated = {
+    ...subs[idx],
+    status: 'active',
+    provider: provider || subs[idx].provider,
+    paidAt,
+    activeUntil,
+    updatedAt: new Date().toISOString()
+  };
+  subs[idx] = updated;
+  saveSubscriptions(subs);
+  return updated;
+};
+
 const formatProjectStatusMessage = (projects) => {
   if (!projects.length) {
     return '\u0421\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u0440\u043e\u0435\u043a\u0442\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u044b.';
@@ -289,6 +359,60 @@ const buildBpayDateTime = () => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(
     now.getMinutes()
   )}:${pad(now.getSeconds())}`;
+};
+
+const requestBpayInvoice = async ({ amountMDL, orderId, description, email, phone }) => {
+  const amount = Number(amountMDL);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('amountMDL is required');
+  }
+  const config = getBpayConfig();
+  const orderReference = orderId || crypto.randomUUID();
+  const bpayUuid = crypto.randomUUID();
+  const payload = {
+    uuid: bpayUuid,
+    merchantid: config.merchantId,
+    amount,
+    valute: normalizeBpayCurrency(config.currency),
+    order_id: orderReference,
+    description: description || config.description,
+    dtime: buildBpayDateTime(),
+    success_url: config.successUrl,
+    fail_url: config.failUrl,
+    callback_url: config.callbackUrl,
+    method: config.paymentMethod,
+    lang: config.language,
+    getUrl: '1'
+  };
+
+  if (email || phone) {
+    payload.params = {
+      email: email || undefined,
+      phone_number: phone || undefined
+    };
+  }
+
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64');
+  const key = buildBpayRequestKey(data, config.secretKey);
+  const form = new URLSearchParams();
+  form.append('data', data);
+  form.append('key', key);
+
+  const bpayRes = await fetch(`${BPAY_API_BASE}/merchant`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString()
+  });
+
+  const responseText = await bpayRes.text();
+  if (!bpayRes.ok) {
+    throw new Error(responseText || 'BPay request failed');
+  }
+  const url = extractBpayUrl(responseText);
+  if (!url) {
+    throw new Error('BPay URL not found');
+  }
+  return { url, orderId: orderReference, uuid: bpayUuid };
 };
 
 const extractBpayUrl = (responseText) => {
@@ -725,6 +849,54 @@ app.get('/api/admin/invoices', requireAdmin, (_req, res) => {
   res.json(getInvoices());
 });
 
+app.get('/api/subscriptions', (req, res) => {
+  const { email, phone } = req.query || {};
+  const subs = getSubscriptions();
+  if (!email && !phone) return res.json(subs);
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const normalizedPhone = String(phone || '').trim();
+  const filtered = subs.filter((sub) => {
+    if (normalizedEmail && String(sub.email || '').toLowerCase() === normalizedEmail) return true;
+    if (normalizedPhone && String(sub.phone || '') === normalizedPhone) return true;
+    return false;
+  });
+  res.json(filtered);
+});
+
+app.post('/api/subscriptions/start', async (req, res) => {
+  try {
+    const { planId, provider, email, phone } = req.body || {};
+    if (!planId) return res.status(400).json({ error: 'planId is required' });
+    if (!provider || !['bpay', 'paypal'].includes(provider))
+      return res.status(400).json({ error: 'provider must be bpay or paypal' });
+    const subscription = createSubscriptionRecord({ planId, email, phone, provider });
+    if (!subscription) return res.status(400).json({ error: 'Invalid subscription plan' });
+
+    if (provider === 'bpay') {
+      const { url, uuid } = await requestBpayInvoice({
+        amountMDL: subscription.amountMDL,
+        orderId: subscription.orderId,
+        description: `Subscription ${subscription.title}`,
+        email,
+        phone
+      });
+      updateSubscriptionByOrderId(subscription.orderId, {
+        bpayUuid: uuid,
+        provider: 'bpay'
+      });
+      return res.json({ url, orderId: subscription.orderId });
+    }
+
+    return res.json({
+      orderId: subscription.orderId,
+      amountMDL: subscription.amountMDL,
+      planId: subscription.planId
+    });
+  } catch (error) {
+    res.status(500).json({ error: String(error.message || error) });
+  }
+});
+
 app.post('/api/admin/invoices', requireAdmin, (req, res) => {
   const { number, date, amount, status, clientId, projectId, projectName } = req.body || {};
   if (!number || !date || !amount) return res.status(400).json({ error: 'number, date, amount are required' });
@@ -906,59 +1078,9 @@ app.get('/api/rates/mdl', async (_req, res) => {
 app.post('/api/bpay/create-invoice', async (req, res) => {
   try {
     const { amountMDL, orderId, description, email, phone } = req.body || {};
-    const amount = Number(amountMDL);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return res.status(400).json({ error: 'amountMDL is required' });
-    }
-
-    const config = getBpayConfig();
-    const orderReference = orderId || crypto.randomUUID();
-    const bpayUuid = crypto.randomUUID();
-    const payload = {
-      uuid: bpayUuid,
-      merchantid: config.merchantId,
-      amount,
-      valute: normalizeBpayCurrency(config.currency),
-      order_id: orderReference,
-      description: description || config.description,
-      dtime: buildBpayDateTime(),
-      success_url: config.successUrl,
-      fail_url: config.failUrl,
-      callback_url: config.callbackUrl,
-      method: config.paymentMethod,
-      lang: config.language,
-      getUrl: '1'
-    };
-
-    if (email) payload.email = String(email);
-    if (phone) payload.phone = String(phone);
-
-    const data = Buffer.from(JSON.stringify(payload)).toString('base64');
-    const key = buildBpayRequestKey(data, config.secretKey);
-
-    updateInvoiceByOrderId(orderReference, { bpayUuid });
-
-    const form = new URLSearchParams();
-    form.append('data', data);
-    form.append('key', key);
-
-    const bpayRes = await fetch(`${BPAY_API_BASE}/merchant`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form.toString()
-    });
-
-    const responseText = await bpayRes.text();
-    if (!bpayRes.ok) {
-      return res.status(500).json({ error: responseText || 'BPay request failed' });
-    }
-
-    const url = extractBpayUrl(responseText);
-    if (!url) {
-      return res.status(500).json({ error: 'BPay URL not found', raw: responseText });
-    }
-
-    res.json({ url, orderId: orderReference, uuid: bpayUuid });
+    const response = await requestBpayInvoice({ amountMDL, orderId, description, email, phone });
+    updateInvoiceByOrderId(response.orderId, { bpayUuid: response.uuid });
+    res.json({ url: response.url, orderId: response.orderId, uuid: response.uuid });
   } catch (error) {
     res.status(500).json({ error: String(error.message || error) });
   }
@@ -988,6 +1110,10 @@ app.post('/api/bpay/callback', (req, res) => {
       if (updated) {
         logAudit({ action: 'invoice_paid', invoiceId: updated.id, provider: 'bpay' });
         sendAdminNotification(`BPay: invoice ${updated.number} paid.`);
+      }
+      const updatedSubscription = markSubscriptionPaid(orderId, 'bpay');
+      if (updatedSubscription) {
+        logAudit({ action: 'subscription_paid', subscriptionId: updatedSubscription.id, provider: 'bpay' });
       }
     }
     res.json({ code: 100, text: 'success', order_id: orderId });
@@ -1088,6 +1214,10 @@ app.post('/api/paypal/capture-order', async (req, res) => {
       if (updated) {
         logAudit({ action: 'invoice_paid', invoiceId: updated.id, provider: 'paypal' });
         sendAdminNotification(`PayPal: invoice ${updated.number} paid.`);
+      }
+      const updatedSubscription = markSubscriptionPaid(customId, 'paypal');
+      if (updatedSubscription) {
+        logAudit({ action: 'subscription_paid', subscriptionId: updatedSubscription.id, provider: 'paypal' });
       }
     }
     res.json({ status: data.status, id: data.id });

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+﻿﻿﻿import React, { useEffect, useRef, useState } from 'react';
 import {
   Menu,
   X,
@@ -8,6 +8,7 @@ import {
   MessageSquare,
   FileText,
   DollarSign,
+  CreditCard,
   Settings,
   Bell,
   LogOut,
@@ -53,6 +54,14 @@ type MenuItemProps = {
   tab: string;
   isActive: boolean;
   onClick: (tab: string) => void;
+};
+
+type SubscriptionRecord = {
+  id: string;
+  planId: string;
+  status?: string;
+  activeUntil?: string | null;
+  orderId?: string;
 };
 
 type CurrencyCode = 'MDL' | 'USD' | 'EUR';
@@ -212,6 +221,16 @@ export default function ClientDashboard() {
   const [ratesError, setRatesError] = useState('');
   const [rates, setRates] = useState<Record<string, number> | null>(null);
   const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+  const [subscriptions, setSubscriptions] = useState<SubscriptionRecord[]>([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(false);
+  const [subscriptionsError, setSubscriptionsError] = useState('');
+  const [subscriptionPayPal, setSubscriptionPayPal] = useState<{
+    planId: string;
+    orderId: string;
+    amountMDL: number;
+  } | null>(null);
+  const [subscriptionPayPalRenderedFor, setSubscriptionPayPalRenderedFor] = useState<string | null>(null);
+  const [subscriptionPayingPlan, setSubscriptionPayingPlan] = useState<string | null>(null);
 
   const loadPayPalScript = () =>
     new Promise<void>((resolve, reject) => {
@@ -223,16 +242,33 @@ export default function ClientDashboard() {
         reject(new Error('PayPal Client ID not configured'));
         return;
       }
+      const existing = document.getElementById('paypal-sdk');
+      if (existing) {
+        existing.remove();
+      }
       const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=EUR`;
+      script.id = 'paypal-sdk';
+      script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=EUR&components=buttons`;
       script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('PayPal SDK load failed'));
+      const timeoutId = setTimeout(() => {
+        reject(new Error('PayPal SDK load timed out'));
+      }, 8000);
+      script.onload = () => {
+        clearTimeout(timeoutId);
+        resolve();
+      };
+      script.onerror = () => {
+        clearTimeout(timeoutId);
+        reject(new Error('PayPal SDK load failed'));
+      };
       document.body.appendChild(script);
     });
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -303,6 +339,80 @@ export default function ClientDashboard() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [paymentInvoiceId, paypalVisibleFor, paypalRenderedFor, invoices, paypalClientId]);
+
+  useEffect(() => {
+    let isActive = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const initSubscriptionPayPal = async () => {
+      if (!subscriptionPayPal || subscriptionPayPalRenderedFor === subscriptionPayPal.planId) return;
+      try {
+        if (!isMountedRef.current) return;
+        setSubscriptionsError('');
+        await loadPayPalScript();
+        if (!isMountedRef.current || !isActive) return;
+        const containerId = `paypal-subscription-${subscriptionPayPal.planId}`;
+        timeoutId = setTimeout(() => {
+          if (!isMountedRef.current || !isActive) return;
+          window.paypal
+            ?.Buttons({
+              createOrder: async () => {
+                const res = await fetch('/api/paypal/create-order', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    amountMDL: subscriptionPayPal.amountMDL,
+                    invoiceNumber: subscriptionPayPal.orderId
+                  })
+                });
+                const text = await res.text();
+                const data = text ? JSON.parse(text) : null;
+                if (!res.ok) throw new Error(data?.error || text || 'Create order failed');
+                if (!data?.id) throw new Error('PayPal order id missing');
+                return data.id;
+              },
+              onApprove: async data => {
+                const res = await fetch('/api/paypal/capture-order', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ orderId: data.orderID, invoiceNumber: subscriptionPayPal.orderId })
+                });
+                const text = await res.text();
+                const payload = text ? JSON.parse(text) : null;
+                if (!res.ok) throw new Error(payload?.error || text || 'Capture failed');
+                if (isMountedRef.current) {
+                  setSubscriptionPayPal(null);
+                  setSubscriptionPayPalRenderedFor(null);
+                  loadSubscriptions();
+                }
+              },
+              onError: err => {
+                if (isMountedRef.current) {
+                  setSubscriptionsError(String(err));
+                }
+              }
+            })
+            .render(`#${containerId}`);
+          if (isMountedRef.current) {
+            setSubscriptionPayPalRenderedFor(subscriptionPayPal.planId);
+          }
+        }, 0);
+      } catch (err) {
+        if (isMountedRef.current) {
+          setSubscriptionsError(String((err as Error)?.message || err));
+        }
+      }
+    };
+
+    initSubscriptionPayPal();
+    return () => {
+      isActive = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [subscriptionPayPal, subscriptionPayPalRenderedFor, paypalClientId]);
+
+  useEffect(() => {
+    loadSubscriptions();
+  }, [clientEmail, clientPhone]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -482,6 +592,143 @@ export default function ClientDashboard() {
   const handleMenuSelect = (tab: string) => {
     setActiveTab(tab);
     setMobileSidebarOpen(false);
+  };
+
+  const subscriptionPlans = [
+    {
+      id: 'basic',
+      badge: t({ ru: 'Для стартапов', en: 'For startups', ro: 'Pentru startup' }),
+      title: 'Basic',
+      hours: t({ ru: 'До 5 часов', en: 'Up to 5 hours', ro: 'Pina la 5 ore' }),
+      price: t({ ru: '1,500 MDL/мес', en: '1,500 MDL/mo', ro: '1,500 MDL/luna' }),
+      priceUsd: t({ ru: '($82/мес)', en: '($82/mo)', ro: '($82/luna)' }),
+      features: [
+        t({ ru: 'Поддержка сайта', en: 'Website support', ro: 'Suport site' }),
+        t({ ru: 'Исправление ошибок', en: 'Bug fixes', ro: 'Corectare erori' }),
+        t({ ru: 'Мелкие правки', en: 'Small edits', ro: 'Modificari mici' }),
+        t({ ru: 'Email поддержка', en: 'Email support', ro: 'Suport email' })
+      ]
+    },
+    {
+      id: 'pro',
+      badge: t({ ru: 'Популярный', en: 'Popular', ro: 'Popular' }),
+      title: 'Pro',
+      hours: t({ ru: 'До 15 часов', en: 'Up to 15 hours', ro: 'Pina la 15 ore' }),
+      price: t({ ru: '4,000 MDL/мес', en: '4,000 MDL/mo', ro: '4,000 MDL/luna' }),
+      priceUsd: t({ ru: '($220/мес)', en: '($220/mo)', ro: '($220/luna)' }),
+      features: [
+        t({ ru: 'Все из Basic', en: 'Everything in Basic', ro: 'Tot din Basic' }),
+        t({ ru: 'Развитие функционала', en: 'Feature development', ro: 'Dezvoltare functionalitati' }),
+        t({ ru: 'Новые фичи', en: 'New features', ro: 'Functionalitati noi' }),
+        t({ ru: 'Приоритетная поддержка', en: 'Priority support', ro: 'Suport prioritar' })
+      ]
+    },
+    {
+      id: 'enterprise',
+      badge: t({ ru: 'Для крупного бизнеса', en: 'For enterprise', ro: 'Pentru business mare' }),
+      title: 'Enterprise',
+      hours: t({ ru: 'Безлимит', en: 'Unlimited', ro: 'Nelimitat' }),
+      price: t({ ru: '8,000 MDL/мес', en: '8,000 MDL/mo', ro: '8,000 MDL/luna' }),
+      priceUsd: t({ ru: '($440/мес)', en: '($440/mo)', ro: '($440/luna)' }),
+      features: [
+        t({ ru: 'Все из Pro', en: 'Everything in Pro', ro: 'Tot din Pro' }),
+        t({ ru: 'Выделенный разработчик', en: 'Dedicated developer', ro: 'Dezvoltator dedicat' }),
+        t({ ru: 'Консультации по развитию', en: 'Growth consulting', ro: 'Consultanta dezvoltare' }),
+        t({ ru: 'Поддержка 24/7', en: '24/7 support', ro: 'Suport 24/7' })
+      ]
+    }
+  ];
+
+  const formatSubscriptionDate = (value?: string | null) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const getActiveSubscription = (planId: string) => {
+    const matches = subscriptions.filter(sub => sub.planId === planId && sub.activeUntil);
+    if (!matches.length) return null;
+    return matches.sort((a, b) => String(b.activeUntil).localeCompare(String(a.activeUntil)))[0];
+  };
+
+  const loadSubscriptions = async () => {
+    if (!clientEmail && !clientPhone) return;
+    setSubscriptionsLoading(true);
+    setSubscriptionsError('');
+    try {
+      const params = new URLSearchParams();
+      if (clientEmail) params.set('email', clientEmail);
+      if (clientPhone) params.set('phone', clientPhone);
+      const res = await fetch(`/api/subscriptions?${params.toString()}`);
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : [];
+      if (!res.ok) {
+        setSubscriptionsError(String(data?.error || text || 'Subscriptions request failed'));
+        return;
+      }
+      setSubscriptions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setSubscriptionsError(errorMessage);
+    } finally {
+      setSubscriptionsLoading(false);
+    }
+  };
+
+  const startSubscriptionPayment = async (planId: string, provider: 'bpay' | 'paypal') => {
+    if (!clientEmail && !clientPhone) {
+      setSubscriptionsError(
+        t({
+          ru: 'Укажите email или телефон в профиле',
+          en: 'Add email or phone in profile',
+          ro: 'Adauga email sau telefon in profil'
+        })
+      );
+      return;
+    }
+    setSubscriptionsError('');
+    setSubscriptionPayingPlan(planId);
+    try {
+      const res = await fetch('/api/subscriptions/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId,
+          provider,
+          email: clientEmail || undefined,
+          phone: clientPhone || undefined
+        })
+      });
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!res.ok) {
+        setSubscriptionsError(data?.error || text || 'Subscription request failed');
+        return;
+      }
+      if (provider === 'bpay') {
+        if (!data?.url) {
+          setSubscriptionsError('BPay URL missing');
+          return;
+        }
+        window.location.href = data.url;
+        return;
+      }
+      if (!data?.orderId || !data?.amountMDL) {
+        setSubscriptionsError('PayPal order data missing');
+        return;
+      }
+      setSubscriptionPayPal({
+        planId,
+        orderId: data.orderId,
+        amountMDL: Number(data.amountMDL)
+      });
+      setSubscriptionPayPalRenderedFor(null);
+    } catch (err) {
+      setSubscriptionsError(String((err as Error)?.message || err));
+    } finally {
+      setSubscriptionPayingPlan(null);
+    }
   };
 
   const readFileAsDataUrl = (file: File) =>
@@ -784,6 +1031,7 @@ export default function ClientDashboard() {
           <MenuItem icon={MessageSquare} label={t({ ru: '\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f', en: 'Messages', ro: 'Mesaje' })} tab="messages" isActive={activeTab === 'messages'} onClick={handleMenuSelect} />
           <MenuItem icon={FileText} label={t({ ru: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b', en: 'Documents', ro: 'Documente' })} tab="documents" isActive={activeTab === 'documents'} onClick={handleMenuSelect} />
           <MenuItem icon={DollarSign} label={t({ ru: '\u0424\u0438\u043d\u0430\u043d\u0441\u044b', en: 'Finances', ro: 'Finante' })} tab="finances" isActive={activeTab === 'finances'} onClick={handleMenuSelect} />
+          <MenuItem icon={CreditCard} label={t({ ru: '\u041f\u043e\u0434\u043f\u0438\u0441\u043a\u0438', en: 'Subscriptions', ro: 'Abonamente' })} tab="subscriptions" isActive={activeTab === 'subscriptions'} onClick={handleMenuSelect} />
           <MenuItem icon={Settings} label={t({ ru: '\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438', en: 'Settings', ro: 'Setari' })} tab="settings" isActive={activeTab === 'settings'} onClick={handleMenuSelect} />
         </nav>
 
@@ -1576,6 +1824,90 @@ export default function ClientDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'subscriptions' && (
+            <div className="space-y-6">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <h1 className="text-3xl font-bold">{t({ ru: 'Подписки', en: 'Subscriptions', ro: 'Abonamente' })}</h1>
+                <span className="text-sm text-gray-500">
+                  {t({ ru: 'Выберите план обслуживания', en: 'Choose a service plan', ro: 'Alege planul de suport' })}
+                </span>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-3">
+                {subscriptionPlans.map(plan => {
+                  const activeSub = getActiveSubscription(plan.id);
+                  const activeUntil = activeSub?.activeUntil ? formatSubscriptionDate(activeSub.activeUntil) : '';
+                  const isPayPalLoading =
+                    subscriptionPayPal?.planId === plan.id && subscriptionPayPalRenderedFor !== plan.id;
+                  return (
+                  <div key={plan.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                    <div className="text-xs font-semibold text-purple-600 bg-purple-50 inline-flex px-3 py-1 rounded-full">
+                      {plan.badge}
+                    </div>
+                    <h2 className="mt-4 text-2xl font-bold">{plan.title}</h2>
+                    <div className="mt-2 text-gray-700 font-semibold">{plan.hours}</div>
+                    <div className="mt-4 text-2xl font-bold text-gray-900">{plan.price}</div>
+                    <div className="text-sm text-gray-500">{plan.priceUsd}</div>
+                    {activeUntil && (
+                      <div className="mt-2 text-sm text-green-600 font-semibold">
+                        {t({ ru: 'Активна до', en: 'Active until', ro: 'Activ pina la' })} {activeUntil}
+                      </div>
+                    )}
+                    <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                      {plan.features.map(feature => (
+                        <li key={feature} className="flex items-start gap-2">
+                          <span className="text-green-500">•</span>
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-6 grid gap-2">
+                      <button
+                        onClick={() => startSubscriptionPayment(plan.id, 'bpay')}
+                        disabled={subscriptionPayingPlan === plan.id}
+                        className="w-full rounded-xl bg-purple-600 text-white py-2.5 font-semibold hover:bg-purple-700 transition disabled:opacity-60"
+                      >
+                        {activeUntil
+                          ? t({ ru: 'Продлить (BPay)', en: 'Renew (BPay)', ro: 'Prelungeste (BPay)' })
+                          : t({ ru: 'Оплатить (BPay)', en: 'Pay (BPay)', ro: 'Plateste (BPay)' })}
+                      </button>
+                      <button
+                        onClick={() => startSubscriptionPayment(plan.id, 'paypal')}
+                        disabled={subscriptionPayingPlan === plan.id}
+                        className="w-full rounded-xl border border-[#ffc439] bg-[#ffc439] py-2.5 font-semibold text-[#111] hover:bg-[#f7b600] transition disabled:opacity-60"
+                      >
+                        {activeUntil
+                          ? t({ ru: 'Продлить (PayPal)', en: 'Renew (PayPal)', ro: 'Prelungeste (PayPal)' })
+                          : t({ ru: 'Оплатить (PayPal)', en: 'Pay (PayPal)', ro: 'Plateste (PayPal)' })}
+                      </button>
+                    </div>
+                    {subscriptionPayPal?.planId === plan.id && (
+                      <div className="mt-4">
+                        {isPayPalLoading && (
+                          <div className="text-sm text-gray-500">
+                            {t({
+                              ru: 'Загружаем PayPal...',
+                              en: 'Loading PayPal...',
+                              ro: 'Se incarca PayPal...'
+                            })}
+                          </div>
+                        )}
+                        <div id={`paypal-subscription-${plan.id}`} />
+                        {subscriptionsError && (
+                          <div className="mt-2 text-sm text-red-600">{subscriptionsError}</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  );
+                })}
+              </div>
+              {subscriptionsLoading && (
+                <div className="text-sm text-gray-500">{t({ ru: 'Загрузка подписок...', en: 'Loading subscriptions...', ro: 'Se incarca abonamentele...' })}</div>
+              )}
+              {subscriptionsError && <div className="text-sm text-red-600">{subscriptionsError}</div>}
             </div>
           )}
 

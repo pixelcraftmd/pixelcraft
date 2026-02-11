@@ -184,7 +184,8 @@ export default function AdminDashboard() {
       );
       setAuditLog(auditRes || []);
     } catch (err) {
-      setError(String((err as Error)?.message || err));
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

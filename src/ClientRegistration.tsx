@@ -16,11 +16,37 @@ export default function ClientRegistration() {
     password: '',
     confirmPassword: ''
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email || !form.password) return;
-    if (form.password !== form.confirmPassword) return;
+    const newErrors: Record<string, string> = {};
+    
+    // Validation
+    if (!form.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+    if (!form.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    if (!form.password) {
+      newErrors.password = 'Password is required';
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = 'Password confirmation is required';
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+    
     try {
       localStorage.setItem('portalpixel_client_profile', JSON.stringify({
         firstName: form.firstName,
@@ -40,18 +66,18 @@ export default function ClientRegistration() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-sm p-8">
         <div className="flex items-start justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold">{t({ ru: '??????????? ???????', en: 'Client registration', ro: '?nregistrare client' })}</h1>
+            <h1 className="text-3xl font-bold">{t({ ru: 'Регистрация клиента', en: 'Client registration', ro: 'Înregistrare client' })}</h1>
             <p className="text-gray-500 mt-1">
               {t({
-                ru: '???????? ??????? ??? ??????? ? ????????',
+                ru: 'Создайте учетную запись для доступа к панели',
                 en: 'Create an account to access the dashboard',
-                ro: 'Crea?i un cont pentru acces la panou'
+                ro: 'Creați un cont pentru acces la panou'
               })}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/client" className="text-sm text-purple-600 hover:underline">
-              {t({ ru: '????? ? ????????', en: 'Back to dashboard', ro: '?napoi la panou' })}
+              {t({ ru: 'Вернуться на панель', en: 'Back to dashboard', ro: 'Înapoi la panou' })}
             </Link>
             <LanguageSwitcher />
           </div>
@@ -73,6 +99,7 @@ export default function ClientRegistration() {
                 onChange={e => setForm({ ...form, firstName: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+              {errors.firstName && <p className="text-sm text-red-600 mt-1">{errors.firstName}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Фамилия</label>
@@ -91,6 +118,7 @@ export default function ClientRegistration() {
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+              {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Телефон</label>
@@ -118,6 +146,7 @@ export default function ClientRegistration() {
                 onChange={e => setForm({ ...form, password: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+              {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Подтверждение пароля</label>
@@ -127,8 +156,9 @@ export default function ClientRegistration() {
                 onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
+              {errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword}</p>}
             </div>
-            {form.password !== form.confirmPassword && form.confirmPassword && (
+            {form.password && form.confirmPassword && form.password !== form.confirmPassword && (
               <div className="col-span-2 text-sm text-red-600">Пароли не совпадают</div>
             )}
             <div className="col-span-2 flex justify-end">
